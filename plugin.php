@@ -1,9 +1,15 @@
 <?php
 /*
-Plugin Name: Sales Admin Manager
-Description: Manage Sales Admins and Sales Partner Admins.
-Version: 1.0
-Author: Mahmud Haisan
+
+ * Plugin Name:       Sales Admin Manager
+ * Plugin URI:        https://github.com/mahmudhaisan/Role-Dependent-Data-Showcase
+ * Description:       Manage Sales Admins and Sales Partner Admins.
+ * Version:           1.0.0
+ * Author:            Mahmud Haisan
+ * Author URI:        https://github.com/mahmudhaisan
+ * License:           GPL v2 or later
+ * Text Domain:       dependent-user-role
+ * Domain Path:       /languages/
  */
 
 function enqueue_custom_scripts()
@@ -65,7 +71,7 @@ function add_custom_dropdown_field($user)
                 $added_sales_partner_admin_id = get_user_meta($current_user_id, 'added_sales_partner_admin_id', true);
 
                 include plugin_dir_path(__FILE__) . '/views/user-edit-dropdown.php';
-            } 
+            }
         }
 
         if ($pagenow == 'user-new.php') {
@@ -90,17 +96,16 @@ function update_sales_partner_admin($user_id)
 
 
 
-   
+
 
     if (current_user_can('sales_partner_admin')) {
 
         $current_sales_partner_admin_id = $current_user->ID;
 
-        if(in_array('sales_admin', get_userdata($user_id)->roles)){
+        if (in_array('sales_admin', get_userdata($user_id)->roles)) {
 
             update_user_meta($user_id, 'added_sales_partner_admin_id', $current_sales_partner_admin_id);
         }
-
     }
 
 
@@ -150,9 +155,29 @@ function modify_user_query_for_sales_partner($query)
         );
 
 
+        $current_role_in = $query->get('role__in');
+
+        $meta_query = array();
+
         // Check if $user_ids is empty, and if so, set the query to return no users
         if (empty($user_ids)) {
-            $query->query_where = 'WHERE 1=0'; // This condition ensures no users are selected
+
+
+            $meta_query[] = array(
+                'key' => 'user_id', // Replace 'user_id' with the appropriate user meta key.
+                'value' => '0',    // A value that is unlikely to exist.
+                'compare' => '=',   // Compare condition that is always false.
+            );
+
+
+            // Apply the meta query to the user query.
+            // $query->set('meta_query', $meta_query);
+
+            // $query->set('role__in', array('customer'));
+
+            if (empty($current_role_in)) {
+                $query->set('role__in', array('customer'));
+            }
         } else {
             $query->set('role__in', array('customer', 'sales_admin'));
             $query->set('include', $user_ids);
@@ -251,7 +276,7 @@ function modify_addify_quote_cpt_query($query)
                 $added_sales_partner_admin_id = get_user_meta($customer_user_id, 'added_sales_partner_admin_id');
                 if ($customer_user && (in_array('customer', $customer_user->roles) || in_array('sales_admin', $customer_user->roles))) {
 
-                    
+
                     if (in_array('sales_admin', $customer_user->roles) && $added_sales_partner_admin_id[0] == $current_user_id) {
                         // If the associated user has the role of 'customer,' add the post ID to the allowed list
                         $allowed_post_ids[] = $post_id;
