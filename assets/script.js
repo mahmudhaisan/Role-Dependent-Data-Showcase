@@ -1,10 +1,11 @@
 jQuery(document).ready(function($) {
     // Initially hide the custom field.
-    // $('.user-dropdown').hide();
+    $('.user-add-under-another').hide();
+
     $('#role').change(function() {
         var selectedRole = $(this).val();
         if (selectedRole == 'sales_admin') {
-            console.log('working');
+        
             // Show the custom field when 'Sales Admin' is selected.
             $('.user-dropdown').show();
         } else {
